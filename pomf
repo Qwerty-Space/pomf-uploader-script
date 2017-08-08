@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# pomf-uploader-script - puush-like functionality for  any pomf site
+# Maintained by Qwerty-Space
+# Repository: https://github.com/Qwerty-Space/pomf-uploader-script
+# Original: https://gitgud.io/snippets/34
+
+## OPTIONS
+
+# Get options
+while getopts hu: option; do
+    case $option in
+        h)hel=1;;
+        u)upl=1;;
+        *)exit;;
+    esac
+done
+
+# Help
+if [[ -z $mul ]]; then
+    if [[ ! -z $hel ]]; then
+        # Display help
+        echo "-h            show this message"
+        echo "-u file       file upload"
+        exit
+    fi
+else
+    echo "error: please only provide one option"
+    exit
+fi
+
+# File
+if [[ -z $mul ]]; then
+    if [[ ! -z $upl ]]; then
+        # Get file
+        file=$(echo $2)
+        mul=1
+    fi
+else
+    echo "error: please only provide one option"
+    exit
+fi
+
+## UPLOADING
+
+# Upload it and grab the url
+output=$(curl --silent -sf -F files[]="@$file" "https://filebox.moe/upload.php?")
+if [[ ! -z $upl ]]; then
+    echo "uploading ${file}..."
+    n=0
+    while [[ $n -le 3 ]]; do
+        printf "\033[37m try #${n}..."
+        if [[ "${output}" =~ '"success":true,' ]]; then
+	    pomffile=$(echo "$output" | grep -Eo '"url":"[A-Za-z0-9]+.*",' | sed 's/"url":"//;s/",//' | sed 's/\\//g')
+            printf '\033[32m done.\n'
+            suc=1
+            break
+        else
+            printf '\033[31m failed.\n'
+            ((n = n +1))
+        fi
+    done
+    url=$pomffile
+else
+    echo "uploading ${file}..."
+    n=0
+    while [[ $n -le 3 ]]; do
+        printf "\033[37m try #${n}..."
+        if [[ "${output}" =~ '"success":true,' ]]; then
+            pomffile=$(echo "$output" | grep -Eo '"url":"[A-Za-z0-9]+.*",' | sed 's/"url":"//;s/",//' | sed 's/\\//g')
+            printf '\033[32m done.\n'
+            suc=1
+            break
+        else
+            printf '\033[31m failed.\n'
+            ((n = n +1))
+        fi
+    done
+    url=$pomffile
+    rm -f $file
+fi
+
+## OUTPUT
+if [[ ! -z $suc ]]; then
+    # Log url to file
+    # Print message to the term
+    echo -e "\033[37m file has been uploaded: $url"
+else
+    echo -e "\033[37m file was not uploaded, did you specify a valid file?"
+fi
+
