@@ -44,7 +44,7 @@ fi
 ## UPLOADING
 
 # Upload it and grab the url
-output=$(curl --silent -sf -F files[]="@$file" "https://filebox.moe/upload.php?")
+output=$(curl --silent -sf -F files[]="@$file" "https://doko.moe/upload.php?")
 if [[ ! -z $upl ]]; then
     echo "uploading ${file}..."
     n=0
